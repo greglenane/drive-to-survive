@@ -1,0 +1,48 @@
+volumes:
+  kestra-data:
+    driver: local
+
+services:
+  kestra:
+    image: kestra/kestra:latest
+    pull_policy: always
+    user: "root"
+    command: server standalone
+    volumes:
+      - kestra-data:/app/storage
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /tmp/kestra-wd:/tmp/kestra-wd
+    environment:
+      SECRET_GITHUB_TOKEN: secret_github
+      KESTRA_CONFIGURATION: |
+        datasources:
+          postgres:
+            url: jdbc:postgresql://10.53.144.2:5432/postgres
+            driverClassName: org.postgresql.Driver
+            username: f1_user
+            password: drivetosurvive
+        kestra:
+          server:
+            basicAuth:
+              enabled: true
+              username: "greglenane@gmail.com"
+              password: drivetosurvive
+          repository:
+            type: postgres
+          storage:
+            type: gcs
+            gcs:
+              bucket: kestra-gcs-drive-to-survive
+              project-id: ny-rides-gregl-446219
+              serviceAccount: secret_service
+          queue:
+            type: postgres
+          tasks:
+            tmpDir:
+              path: /tmp/kestra-wd/tmp
+          url: http://localhost:8080/
+          tutorial-flows:
+            enabled: false
+    ports:
+      - "8080:8080"
+      - "8081:8081"

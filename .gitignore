@@ -1,0 +1,7 @@
+/config
+
+.ipynb_checkpoints
+.venv
+pyproject.toml
+uv.lock
+.python-version
