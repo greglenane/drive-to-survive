@@ -1,0 +1,130 @@
+id: fetch-f1-results
+namespace: f1-analytics
+
+variables:
+  api_url: "https://api.jolpi.ca/ergast/f1/2024/7/results/"
+  file_name: "results_{{ render(outputs['getApiRound']['vars']['race_year']) }}_{{ render(outputs['getApiRound']['vars']['round_number']) }}_{{ render(outputs['getApiRound']['vars']['race_name']) }}.csv"
+
+tasks:
+  - id: getApiRound
+    type: io.kestra.plugin.scripts.python.Script
+    description: "Get the newest race result round from api. Save api request as json body"
+    beforeCommands:
+      - pip install requests kestra
+    outputFiles:
+      - "race_data.json"
+    script: |
+      import requests
+      import json
+      from kestra import Kestra
+
+      # send api get reuest
+      response = requests.get("{{ render(vars.api_url) }}")
+      race_data = response.json()
+
+      # save race_data as json
+      with open('race_data.json', 'w') as json_file:
+        json.dump(race_data, json_file)
+
+      # get round number
+      round_number = race_data.get('MRData', {}).get('RaceTable', {}).get('round', None)
+      print(type(round_number))
+      round_number = int(round_number)
+      print(type(round_number))
+      race_name = race_data.get('MRData', {}).get('RaceTable', {}).get('Races', [{}])[0].get('raceName', None)
+      race_name = race_name.replace(" ", "")
+      race_year = race_data.get('MRData', {}).get('RaceTable', {}).get('Races', [{}])[0].get('season', None)
+      race_date = race_data.get('MRData', {}).get('RaceTable', {}).get('Races', [{}])[0].get('date', None)
+
+      # save vars for later tasks
+      Kestra.outputs({'round_number': round_number})
+      Kestra.outputs({'race_name': race_name})
+      Kestra.outputs({'race_year': race_year})
+      Kestra.outputs({'race_date': race_date})
+
+  - id: getDBrounds
+    type: "io.kestra.plugin.jdbc.postgresql.Query"
+    description: "Get the most recent race round from DB"
+    sql: |
+      SELECT DISTINCT round_number
+      FROM results_2024
+      ORDER BY round_number DESC
+      LIMIT 1;
+    fetchOne: true
+  
+  - id: show_output
+    type: io.kestra.plugin.core.log.Log
+    message:
+      - "{{ outputs.getApiRound.vars.round_number }}"
+      - "{{ outputs.getDBrounds.row.round_number }}"
+
+  - id: return
+    type: io.kestra.plugin.core.debug.Return
+    format: "{{ outputs.getApiRound.vars.round_number > outputs.getDBrounds.row.round_number }}"
+
+  - id: new_race_check
+    type: io.kestra.plugin.core.flow.If
+    condition: "{{ outputs.getApiRound.vars.round_number > outputs.getDBrounds.row.round_number }}"
+    then:
+      - id: transformApi
+        type: io.kestra.plugin.scripts.python.Script
+        description: "Get the newest race result round from api. Save race results as .csv for later use."
+        beforeCommands:
+          - pip install pandas
+        outputFiles:
+          - "{{ render(vars.file_name) }}"
+        script: |      
+          import json
+          import pandas as pd
+
+          # load in api request variable as json body
+          with open("{{ outputs['getApiRound']['outputFiles']['race_data.json'] }}", 'r') as json_file:
+            race_data = json.load(json_file)
+
+          # get race information: round, name, year, date
+          round_number = race_data.get('MRData', {}).get('RaceTable', {}).get('round', None)
+          race_name = race_data.get('MRData', {}).get('RaceTable', {}).get('Races', [{}])[0].get('raceName', None)
+          race_year = race_data.get('MRData', {}).get('RaceTable', {}).get('Races', [{}])[0].get('season', None)
+          race_date = race_data.get('MRData', {}).get('RaceTable', {}).get('Races', [{}])[0].get('date', None)
+
+          # get results from race data and save as df
+          results = race_data.get('MRData', {}).get('RaceTable', {}).get('Races', [{}])[0].get('Results', None)
+          df = pd.DataFrame(results)
+
+          # transform df and add race level info as columns
+          df['driver_id'] = df['Driver'].apply(lambda x: x['driverId'])
+          df['constructor_id'] = df['Constructor'].apply(lambda x: x['constructorId'])
+          df['driver'] = df['Driver'].apply(lambda x: f"{x['givenName']} {x['familyName']}")
+          df['constructor'] = df['Constructor'].apply(lambda x: x['name'])
+          df['time'] = df['Time'].apply(lambda x: x['time'] if isinstance(x, dict) else None)
+          df['fastest_lap_rank'] = df['FastestLap'].apply(lambda x: x['rank'] if isinstance(x, dict) else None)
+          df.insert(0, 'race_name', race_name)
+          df.insert(1, 'race_date', race_date)
+          df.insert(2, 'race_year', race_year)
+          df.insert(3, 'round_number', round_number)
+
+          # select columns of interest
+          df = df[['race_name', 'race_date', 'race_year', 'round_number', 'position', 'points', 'fastest_lap_rank', 'driver', 'driver_id', 'constructor','constructor_id', 'grid', 'status',]]
+
+          # write df to csv
+          df.to_csv("{{ render(vars.file_name) }}", index=False)
+
+      - id: copy_in
+        type: io.kestra.plugin.jdbc.postgresql.CopyIn
+        format: CSV
+        from: "{{ outputs['transformApi']['outputFiles'][render(vars.file_name)] }}"
+        table: results_2024
+        header: true
+        delimiter: ","
+
+    else:
+      - id: when_false
+        type: io.kestra.plugin.core.log.Log
+        message: "testNo new race results. Results are up to date through round {{ outputs.getDBrounds.row.round_number }}"
+
+pluginDefaults:
+  - type: io.kestra.plugin.jdbc.postgresql
+    values:
+      username: "{{ kv('POSTGRES_USER') }}"
+      password: "{{ kv('POSTGRES_PASSWORD') }}"
+      url: "{{ kv('POSTGRES_URL') }}"
