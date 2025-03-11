@@ -5,3 +5,5 @@
 pyproject.toml
 uv.lock
 .python-version
+.env
+creds.txt
