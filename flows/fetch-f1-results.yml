@@ -52,19 +52,18 @@ tasks:
     type: "io.kestra.plugin.jdbc.postgresql.Query"
     description: "Get the most recent race round from DB"
     sql: |
-      SELECT DISTINCT round_number
-      FROM results_2024
-      ORDER BY round_number DESC
-      LIMIT 1;
-    fetchOne: true
+      SELECT COALESCE(MAX(round_number), 0) AS round_number
+      FROM results_2024;
+    fetchType: FETCH_ONE
 
   - id: new_race_check
     type: io.kestra.plugin.core.flow.If
+    description: "check if round in last api pull is greater than max round in db"
     condition: "{{ outputs.getApiRound.vars.round_number > outputs.getDBrounds.row.round_number }}"
     then:
       - id: get_schedule
         type: io.kestra.plugin.jdbc.postgresql.Query
-        description: "Check to see if this GP has a sprint"
+        description: "pull schedule detail for current round. we will use sprint info to check if there is a sprint"
         sql: |
           SELECT * 
           FROM schedule_2025
@@ -73,11 +72,12 @@ tasks:
 
       - id: check_sprint
         type: io.kestra.plugin.core.flow.If
+        description: "check to see if there is sprint data in the current round schedule"
         condition: "{{ outputs.get_schedule.row.sprint_date }}"
         then:
           - id: transformSprint
             type: io.kestra.plugin.scripts.python.Script
-            description: "Get the newest race result round from api. Save api request as json body"
+            description: "Get the newest sprint result round from api. Save df as csv for sql import"
             beforeCommands:
               - pip install requests pandas
             outputFiles:
@@ -86,7 +86,7 @@ tasks:
               import requests
               import pandas as pd
 
-              response = requests.get("https://api.jolpi.ca/ergast/2024/f1/2024/5/sprint/")
+              response = requests.get("{{ render(vars.sprint_url) }}")
               sprint_data = response.json()
               
               round_number = sprint_data.get('MRData', {}).get('RaceTable', {}).get('round', None)
@@ -115,6 +115,7 @@ tasks:
 
           - id: copy_in_sprint
             type: io.kestra.plugin.jdbc.postgresql.CopyIn
+            description: "import csv from transformSprint into sprint results in DB"
             format: CSV
             from: "{{ outputs['transformSprint']['outputFiles'][render(vars.sprint_file)] }}"
             table: sprint_2024
@@ -176,6 +177,57 @@ tasks:
         header: true
         delimiter: ","
 
+      - id: facts_results
+        type: io.kestra.plugin.jdbc.postgresql.Queries
+        description: "truncate and recreate the facts table which will feed the visualizations"
+        sql: |
+          truncate picks_results_2024;
+          insert into picks_results_2024
+          WITH picks_join AS (
+          SELECT picks.name,
+                 picks.race_date,
+                 picks.race_name,
+                 picks.driver,
+                 results.race_year,
+                 results.round_number,
+                 results."position" as gp_position,
+                 sprint.position as sprint_position,
+                 results.fastest_lap_rank,
+                 results.driver_id,
+                 results.constructor,
+                 results.constructor_id,
+                 results.grid,
+                 results.status,
+                 gp_scoring.gp as gp_points,
+                 sprint_scoring.spirnt as sprint_points,
+                 fastlap_scoring.fatest_lap as fastest_lap_points
+          FROM picks_2024 picks
+            LEFT JOIN results_2024 results ON picks.driver = results.driver AND
+                                              picks.race_name = results.race_name
+            LEFT JOIN sprint_2024 sprint ON picks.driver = sprint.driver AND
+                                            picks.race_name = sprint.race_name
+            LEFT JOIN scoring gp_scoring ON results."position" = gp_scoring.place
+            LEFT JOIN scoring sprint_scoring ON sprint."position" = sprint_scoring.place
+            LEFT JOIN scoring fastlap_scoring ON results.fastest_lap_rank = fastlap_scoring.place)
+          SELECT name,
+                 race_date,
+                 race_year,
+                 race_name,
+                 round_number,
+                 driver,
+                 driver_id,
+                 constructor,
+                 constructor_id,
+                 grid,
+                 gp_position,
+                 sprint_position,
+                 fastest_lap_rank,
+                 gp_points,
+                 sprint_points,
+                 fastest_lap_points,
+                 (COALESCE(gp_points, 0) + COALESCE(sprint_points, 0) + COALESCE(fastest_lap_points, 0)) AS total_points
+          FROM picks_join;
+          
     else:
       - id: when_false
         type: io.kestra.plugin.core.log.Log
