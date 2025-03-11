@@ -1,8 +1,44 @@
 volumes:
   kestra-data:
     driver: local
+  postgres-data:
+    driver: local
+  project-data:
+    driver: local  # New volume for the project database
 
 services:
+  postgres-kestra:
+    image: postgres
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: kestra
+      POSTGRES_USER: kestra
+      POSTGRES_PASSWORD: k3str4
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+    ports:
+      - "5432:5432"
+
+  postgres-f1:  # New service for your project database
+    image: postgres
+    volumes:
+      - project-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: drive_to_survive  # Name of the new database
+      POSTGRES_USER: f1_user  # User for the project database
+      POSTGRES_PASSWORD: drivetosurvive  # Password for the project user
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+    ports:
+      - "5433:5432"  # Expose a different port for the project database (5433 on the host)
+
   kestra:
     image: kestra/kestra:latest
     pull_policy: always
@@ -13,14 +49,14 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - /tmp/kestra-wd:/tmp/kestra-wd
     environment:
-      SECRET_GITHUB_TOKEN: secret_github
+      SECRET_GITHUB_TOKEN: ${SECRET_GITHUB_TOKEN}
       KESTRA_CONFIGURATION: |
         datasources:
           postgres:
-            url: jdbc:postgresql://10.53.144.2:5432/postgres
+            url: jdbc:postgresql://postgres-kestra:5432/kestra
             driverClassName: org.postgresql.Driver
-            username: f1_user
-            password: drivetosurvive
+            username: kestra
+            password: k3str4
         kestra:
           server:
             basicAuth:
@@ -30,11 +66,9 @@ services:
           repository:
             type: postgres
           storage:
-            type: gcs
-            gcs:
-              bucket: kestra-gcs-drive-to-survive
-              project-id: ny-rides-gregl-446219
-              serviceAccount: secret_service
+            type: local
+            local:
+              basePath: "/app/storage"
           queue:
             type: postgres
           tasks:
@@ -46,3 +80,6 @@ services:
     ports:
       - "8080:8080"
       - "8081:8081"
+    depends_on:
+      postgres-kestra:
+        condition: service_started
