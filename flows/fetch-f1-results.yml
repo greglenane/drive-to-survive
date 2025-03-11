@@ -1,9 +1,16 @@
 id: fetch-f1-results
 namespace: f1-analytics
 
+inputs:
+  - id: round
+    type: STRING
+    required: true
+
 variables:
-  api_url: "https://api.jolpi.ca/ergast/f1/2024/7/results/"
-  file_name: "results_{{ render(outputs['getApiRound']['vars']['race_year']) }}_{{ render(outputs['getApiRound']['vars']['round_number']) }}_{{ render(outputs['getApiRound']['vars']['race_name']) }}.csv"
+  api_url: "https://api.jolpi.ca/ergast/f1/2024/{{ inputs.round }}/results/"
+  file_name: "results_{{ render(outputs['getApiRound']['vars']['race_year']) }}_{{ render(outputs['getApiRound']['vars']['round_number']) }}_{{ render(outputs['getApiRound']['vars']['racename']) }}.csv"
+  sprint_url: "https://api.jolpi.ca/ergast/2024/f1/2024/{{ inputs.round }}/sprint/"
+  sprint_file: "sprint_{{ render(outputs['getApiRound']['vars']['race_year']) }}_{{ render(outputs['getApiRound']['vars']['round_number']) }}_{{ render(outputs['getApiRound']['vars']['racename']) }}.csv"
 
 tasks:
   - id: getApiRound
@@ -28,17 +35,16 @@ tasks:
 
       # get round number
       round_number = race_data.get('MRData', {}).get('RaceTable', {}).get('round', None)
-      print(type(round_number))
       round_number = int(round_number)
-      print(type(round_number))
       race_name = race_data.get('MRData', {}).get('RaceTable', {}).get('Races', [{}])[0].get('raceName', None)
-      race_name = race_name.replace(" ", "")
+      racename = race_name.replace(" ", "")
       race_year = race_data.get('MRData', {}).get('RaceTable', {}).get('Races', [{}])[0].get('season', None)
       race_date = race_data.get('MRData', {}).get('RaceTable', {}).get('Races', [{}])[0].get('date', None)
 
       # save vars for later tasks
       Kestra.outputs({'round_number': round_number})
       Kestra.outputs({'race_name': race_name})
+      Kestra.outputs({'racename': racename})
       Kestra.outputs({'race_year': race_year})
       Kestra.outputs({'race_date': race_date})
 
@@ -51,21 +57,74 @@ tasks:
       ORDER BY round_number DESC
       LIMIT 1;
     fetchOne: true
-  
-  - id: show_output
-    type: io.kestra.plugin.core.log.Log
-    message:
-      - "{{ outputs.getApiRound.vars.round_number }}"
-      - "{{ outputs.getDBrounds.row.round_number }}"
-
-  - id: return
-    type: io.kestra.plugin.core.debug.Return
-    format: "{{ outputs.getApiRound.vars.round_number > outputs.getDBrounds.row.round_number }}"
 
   - id: new_race_check
     type: io.kestra.plugin.core.flow.If
     condition: "{{ outputs.getApiRound.vars.round_number > outputs.getDBrounds.row.round_number }}"
     then:
+      - id: get_schedule
+        type: io.kestra.plugin.jdbc.postgresql.Query
+        description: "Check to see if this GP has a sprint"
+        sql: |
+          SELECT * 
+          FROM schedule_2025
+          WHERE race = '{{ outputs.getApiRound.vars.race_name }}'
+        fetchOne: true
+
+      - id: check_sprint
+        type: io.kestra.plugin.core.flow.If
+        condition: "{{ outputs.get_schedule.row.sprint_date }}"
+        then:
+          - id: transformSprint
+            type: io.kestra.plugin.scripts.python.Script
+            description: "Get the newest race result round from api. Save api request as json body"
+            beforeCommands:
+              - pip install requests pandas
+            outputFiles:
+              - "{{ render(vars.sprint_file) }}"
+            script: |
+              import requests
+              import pandas as pd
+
+              response = requests.get("https://api.jolpi.ca/ergast/2024/f1/2024/5/sprint/")
+              sprint_data = response.json()
+              
+              round_number = sprint_data.get('MRData', {}).get('RaceTable', {}).get('round', None)
+              race_name = sprint_data.get('MRData', {}).get('RaceTable', {}).get('Races', [{}])[0].get('raceName', None)
+              race_year = sprint_data.get('MRData', {}).get('RaceTable', {}).get('Races', [{}])[0].get('season', None)
+              race_date = sprint_data.get('MRData', {}).get('RaceTable', {}).get('Races', [{}])[0].get('date', None)
+
+              sprint_data = sprint_data.get('MRData', {}).get('RaceTable', {}).get('Races', [{}])[0].get('SprintResults', None)
+              df = pd.DataFrame(sprint_data)
+
+              df['driver_id'] = df['Driver'].apply(lambda x: x['driverId'])
+              df['constructor_id'] = df['Constructor'].apply(lambda x: x['constructorId'])
+              df['driver'] = df['Driver'].apply(lambda x: f"{x['givenName']} {x['familyName']}")
+              df['constructor'] = df['Constructor'].apply(lambda x: x['name'])
+              df['time'] = df['Time'].apply(lambda x: x['time'] if isinstance(x, dict) else None)
+
+              df.insert(0, 'race_name', race_name)
+              df.insert(1, 'race_date', race_date)
+              df.insert(2, 'race_year', race_year)
+              df.insert(3, 'round_number', round_number)
+
+              df = df[['race_name', 'race_date', 'race_year', 'round_number', 'position', 'points', 'driver', 'driver_id', 'constructor', 'constructor_id', 'grid', 'status',]]
+
+              # write df to csv
+              df.to_csv("{{ render(vars.sprint_file) }}", index=False)
+
+          - id: copy_in_sprint
+            type: io.kestra.plugin.jdbc.postgresql.CopyIn
+            format: CSV
+            from: "{{ outputs['transformSprint']['outputFiles'][render(vars.sprint_file)] }}"
+            table: sprint_2024
+            header: true
+            delimiter: ","
+        else:
+          - id: noSprint
+            type: io.kestra.plugin.core.log.Log
+            message: "There is no sprint in {{ outputs.getApiRound.vars.round_number }}"
+
       - id: transformApi
         type: io.kestra.plugin.scripts.python.Script
         description: "Get the newest race result round from api. Save race results as .csv for later use."
