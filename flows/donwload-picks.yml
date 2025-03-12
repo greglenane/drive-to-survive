@@ -1,0 +1,95 @@
+id: download-picks
+namespace: f1-analytics
+
+variables:
+  api_url: "https://api.jolpi.ca/ergast/f1/current/last/results/"
+  picks_file: "picks_{{ outputs.getApiRound.vars.race_year }}_{{ outputs.getApiRound.vars.round_number }}.csv"
+
+tasks:
+  - id: getApiRound
+    type: io.kestra.plugin.scripts.python.Script
+    description: "Get the newest race result round from api. Save api request as json body"
+    beforeCommands:
+      - pip install requests kestra
+    script: |
+      import requests
+      from kestra import Kestra
+
+      # send api get reuest
+      response = requests.get("{{ render(vars.api_url) }}")
+      race_data = response.json()
+
+      # get round number
+      round_number = int(race_data.get('MRData', {}).get('RaceTable', {}).get('round', None))
+      #race_year = race_data.get('MRData', {}).get('RaceTable', {}).get('Races', [{}])[0].get('season', None)
+      race_year = 2025
+
+      # save vars for later tasks
+      Kestra.outputs({'round_number': round_number})
+      Kestra.outputs({'race_year': race_year})
+
+  - id: getDBrounds
+    type: "io.kestra.plugin.jdbc.postgresql.Query"
+    description: "Get the most recent race round from DB"
+    sql: |
+      SELECT COALESCE(MAX(round_number), 0) AS round_number
+      FROM "results_{{ outputs.getApiRound.vars.race_year }}";
+    
+  - id: new_race_check
+    type: io.kestra.plugin.core.flow.If
+    description: "check if round in last api pull is greater than max round in db"
+    condition: "{{ outputs.getApiRound.vars.round_number > outputs.getDBrounds.row.round_number }}"
+    then:
+      - id: getSheetNames
+        type: io.kestra.plugin.scripts.python.Script
+        outputFiles:
+          - "{{ render(vars.picks_file) }}"
+        beforeCommands:
+          - pip install gspread pandas kestra
+        script: |
+          import gspread
+          from google.oauth2.service_account import Credentials
+          import pandas as pd
+          import json
+    
+          SCOPES = [
+              "https://www.googleapis.com/auth/spreadsheets",
+              "https://www.googleapis.com/auth/drive"
+          ]
+    
+          # Authenticate using the credentials
+          CREDS = Credentials.from_service_account_info(json.loads("{{ kv('SHEETS_SERVICE_ACCOUNT') }}"), scopes=SCOPES)
+          CLIENT = gspread.authorize(CREDS)
+    
+          # Open the Google Sheet
+          FILE_NAME = "picks_2025"
+          spreadsheet = CLIENT.open(FILE_NAME)
+    
+          # Get the names of the sheets in the workbook
+          sheet_names = [worksheet.title for worksheet in spreadsheet.worksheets()]
+    
+          if "{{ outputs.getApiRound.vars.round_number }}" in sheet_names:
+            sheet = spreadsheet.worksheet("{{ outputs.getApiRound.vars.round_number }}")
+            df = pd.DataFrame(sheet.get_all_records())
+            df.to_csv("{{ render(vars.picks_file) }}", index=False, header=False)
+      - id: copy_in_sprint
+        type: io.kestra.plugin.jdbc.postgresql.CopyIn
+        description: "import csv from transformSprint into sprint results in DB"
+        format: CSV
+        from: "{{ outputs['getSheetNames']['outputFiles'][render(vars.picks_file)] }}"
+        table: "picks_{{ outputs.getApiRound.vars.race_year }}"
+        header: false
+        delimiter: ","
+
+    else:
+      - id: noSprint
+        type: io.kestra.plugin.core.log.Log
+        message: "There is no sprint in {{ outputs.getApiRound.vars.round_number }}"
+
+
+pluginDefaults:
+  - type: io.kestra.plugin.jdbc.postgresql
+    values:
+      username: "{{ kv('POSTGRES_USER') }}"
+      password: "{{ kv('POSTGRES_PASSWORD') }}"
+      url: "{{ kv('POSTGRES_URL') }}"

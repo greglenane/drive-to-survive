@@ -1,0 +1,17 @@
+id: backfill_2024
+namespace: f1-analytics
+
+tasks:
+  - id: everyRound
+    type: io.kestra.plugin.core.flow.ForEach
+    values: ["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24"]
+    allowFailure: true
+    tasks:
+      - id: subflow_call
+        type: io.kestra.plugin.core.flow.Subflow
+        namespace: f1-analytics
+        flowId: fetch-f1-results
+        inputs:
+          round: "{{ taskrun.value }}"
+        wait: true
+        transmitFailed: true

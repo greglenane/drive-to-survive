@@ -1,15 +1,10 @@
-id: fetch-f1-results
+id: fetch-f1-results-2025
 namespace: f1-analytics
 
-inputs:
-  - id: round
-    type: STRING
-    required: true
-
 variables:
-  api_url: "https://api.jolpi.ca/ergast/f1/2024/{{ inputs.round }}/results/"
+  api_url: "https://api.jolpi.ca/ergast/f1/current/last/results/"
   file_name: "results_{{ render(outputs['getApiRound']['vars']['race_year']) }}_{{ render(outputs['getApiRound']['vars']['round_number']) }}_{{ render(outputs['getApiRound']['vars']['racename']) }}.csv"
-  sprint_url: "https://api.jolpi.ca/ergast/2024/f1/2024/{{ inputs.round }}/sprint/"
+  sprint_url: "https://api.jolpi.ca/ergast/f1/current/last/sprint/"
   sprint_file: "sprint_{{ render(outputs['getApiRound']['vars']['race_year']) }}_{{ render(outputs['getApiRound']['vars']['round_number']) }}_{{ render(outputs['getApiRound']['vars']['racename']) }}.csv"
 
 tasks:
@@ -24,7 +19,7 @@ tasks:
       import requests
       import json
       from kestra import Kestra
-
+  
       # send api get reuest
       response = requests.get("{{ render(vars.api_url) }}")
       race_data = response.json()
@@ -53,7 +48,7 @@ tasks:
     description: "Get the most recent race round from DB"
     sql: |
       SELECT COALESCE(MAX(round_number), 0) AS round_number
-      FROM results_2024;
+      FROM "results_{{ outputs.getApiRound.vars.race_year }}";
     fetchType: FETCH_ONE
 
   - id: new_race_check
@@ -66,7 +61,7 @@ tasks:
         description: "pull schedule detail for current round. we will use sprint info to check if there is a sprint"
         sql: |
           SELECT * 
-          FROM schedule_2024
+          FROM "schedule_{{ outputs.getApiRound.vars.race_year }}"
           WHERE race = '{{ outputs.getApiRound.vars.race_name }}'
         fetchOne: true
 
@@ -118,7 +113,7 @@ tasks:
             description: "import csv from transformSprint into sprint results in DB"
             format: CSV
             from: "{{ outputs['transformSprint']['outputFiles'][render(vars.sprint_file)] }}"
-            table: sprint_2024
+            table: "sprint_{{ outputs.getApiRound.vars.race_year }}"
             header: true
             delimiter: ","
         else:
@@ -173,7 +168,7 @@ tasks:
         type: io.kestra.plugin.jdbc.postgresql.CopyIn
         format: CSV
         from: "{{ outputs['transformApi']['outputFiles'][render(vars.file_name)] }}"
-        table: results_2024
+        table: "results_{{ outputs.getApiRound.vars.race_year }}"
         header: true
         delimiter: ","
 
@@ -181,8 +176,8 @@ tasks:
         type: io.kestra.plugin.jdbc.postgresql.Queries
         description: "truncate and recreate the facts table which will feed the visualizations"
         sql: |
-          truncate picks_results_2024;
-          insert into picks_results_2024 
+          truncate "picks_results_{{ outputs.getApiRound.vars.race_year }}";
+          insert into "picks_results_{{ outputs.getApiRound.vars.race_year }}" 
           WITH picks_join AS (
           SELECT picks.name,
                  picks.race_date,
@@ -201,11 +196,11 @@ tasks:
                  gp_scoring.gp as gp_points,
                  sprint_scoring.sprint as sprint_points,
                  fastlap_scoring.fastest_lap as fastest_lap_points
-          FROM picks_2024 picks
-              LEFT JOIN results_2024 results ON picks.driver = results.driver AND
-                                                picks.race_name = results.race_name
-              LEFT JOIN sprint_2024 sprint ON picks.driver = sprint.driver AND
-                                              picks.race_name = sprint.race_name
+          FROM "picks_{{ outputs.getApiRound.vars.race_year }}" picks
+              LEFT JOIN "results_{{ outputs.getApiRound.vars.race_year }}" results ON picks.driver = results.driver AND
+                                                                                      picks.race_name = results.race_name
+              LEFT JOIN "sprint_{{ outputs.getApiRound.vars.race_year }}" sprint ON picks.driver = sprint.driver AND
+                                                                                    picks.race_name = sprint.race_name
               LEFT JOIN scoring gp_scoring ON results."position" = gp_scoring."position"
               LEFT JOIN scoring sprint_scoring ON sprint."position" = sprint_scoring."position"
               LEFT JOIN scoring fastlap_scoring ON results.fastest_lap_rank = fastlap_scoring."position")
