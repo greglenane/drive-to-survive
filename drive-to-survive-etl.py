@@ -2,8 +2,8 @@ import requests
 import pandas as pd
 import duckdb
 import yaml  
-import ast
 import yaml
+import os
 
 # set variables
 rnd = "24"
