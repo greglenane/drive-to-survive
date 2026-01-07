@@ -8,6 +8,11 @@ import yaml
 # set variables
 rnd = "24"
 year = "2025"
+
+s3_region = os.getenv('S3_REGION')
+s3_access_key_id = os.getenv('S3_ACCESS_KEY_ID')
+s3_secret_access_key = os.getenv('S3_SECRET_ACCESS_KEY')
+
 gp_api_temp_path     = "s3://greglenane-drive-to-survive/api/gp/gp_api_temp.parquet"
 gp_api_main_path     = "s3://greglenane-drive-to-survive/api/gp/gp_api_main.parquet"
 gp_results_path      = "s3://greglenane-drive-to-survive/gp/gp_results.parquet"
@@ -15,7 +20,15 @@ sprint_api_temp_path = "s3://greglenane-drive-to-survive/api/sprint/sprint_api_t
 sprint_api_main_path = "s3://greglenane-drive-to-survive/api/sprint/sprint_api_main.parquet"
 sprint_results_path  = "s3://greglenane-drive-to-survive/sprint/sprint_results.parquet"
 
-
+# Enable S3 access
+con = duckdb.connect()
+con.execute("INSTALL httpfs;")
+con.execute("LOAD httpfs;")
+con.execute(f"""
+SET s3_region= '{s3_region}';
+SET s3_access_key_id= '{s3_access_key_id}';
+SET s3_secret_access_key= '{s3_secret_access_key}';
+""")
 
 # functions
 # Robust Parser for DuckDB-stringified JSON
