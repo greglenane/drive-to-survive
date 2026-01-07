@@ -4,6 +4,7 @@ name: Run Python Script with uv
 
 on:
   # This enables the "Run workflow" button in the GitHub Actions tab
+<<<<<<< HEAD
   workflow_dispatch:
 
 jobs:
@@ -51,10 +52,12 @@ name: Run Python Script with uv
 on:
   push:
     branches: [ "main" ]
+=======
+>>>>>>> 24a0575 (structure for running multiple python script jobs in gh actions)
   workflow_dispatch:
 
 jobs:
-  run-script:
+  run-scripts:
     runs-on: ubuntu-latest
 
     steps:
@@ -77,17 +80,29 @@ jobs:
         uses: astral-sh/setup-uv@v5
         with:
           enable-cache: true
+          version: 'latest'
 
       - name: "Set up Python"
         run: uv python install
 
       - name: "Install dependencies"
-        run: uv sync --frozen
+        run: uv sync 
 
-      - name: "Run Script"
+      - name: "Run API Script"
         env:
           S3_ACCESS_KEY_ID: ${{ secrets.S3_ACCESS_KEY_ID }}
           S3_SECRET_ACCESS_KEY: ${{ secrets.S3_SECRET_ACCESS_KEY }}
           S3_REGION: ${{ secrets.S3_REGION }}
+<<<<<<< HEAD
         run: uv run drive-to-survive-etl.py
 >>>>>>> 811a1e9 (updates for secret use and first script run test)
+=======
+        run: uv run download-last-race.py
+
+      - name: "Run Conversion Script"
+        env:
+          S3_ACCESS_KEY_ID: ${{ secrets.S3_ACCESS_KEY_ID }}
+          S3_SECRET_ACCESS_KEY: ${{ secrets.S3_SECRET_ACCESS_KEY }}
+          S3_REGION: ${{ secrets.S3_REGION }}
+        run: uv run convert-results.py
+>>>>>>> 24a0575 (structure for running multiple python script jobs in gh actions)

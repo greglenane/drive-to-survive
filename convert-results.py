@@ -3,8 +3,12 @@ import duckdb
 import yaml
 import os
 
+<<<<<<< HEAD
 # set variables
 s3_region = os.getenv('S3_REGION')
+=======
+# set variabless3_region = os.getenv('S3_REGION')
+>>>>>>> 24a0575 (structure for running multiple python script jobs in gh actions)
 s3_access_key_id = os.getenv('S3_ACCESS_KEY_ID')
 s3_secret_access_key = os.getenv('S3_SECRET_ACCESS_KEY')
 
@@ -41,7 +45,11 @@ def robust_parse(val):
             return []
     return val
 
+<<<<<<< HEAD
 print(f"Beginning conversion process")
+=======
+print(f"Beginning conversion process for Round {rnd}, Year {year}")
+>>>>>>> 24a0575 (structure for running multiple python script jobs in gh actions)
 
 ###########################################################################################
 # PART 3: FLATTENING & TRANSFORMATION (GP RESULTS)
@@ -123,4 +131,8 @@ TO '{sprint_results_path}'
 (FORMAT PARQUET, OVERWRITE_OR_IGNORE 1)
 """)
 
+<<<<<<< HEAD
 print("Flattened Sprint results data saved to S3 successfully.")
+=======
+print("Flattened Sprint results data saved to S3 successfully.")
+>>>>>>> 24a0575 (structure for running multiple python script jobs in gh actions)
