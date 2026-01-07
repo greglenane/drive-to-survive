@@ -4,9 +4,9 @@ import yaml
 import os
 
 # set variables
-s3_region = os.getenv('S3_REGION')
-s3_access_key_id = os.getenv('S3_ACCESS_KEY_ID')
-s3_secret_access_key = os.getenv('S3_SECRET_ACCESS_KEY')
+#s3_region = os.getenv('S3_REGION')
+#s3_access_key_id = os.getenv('S3_ACCESS_KEY_ID')
+#s3_secret_access_key = os.getenv('S3_SECRET_ACCESS_KEY')
 
 gp_api_main_path     = "s3://greglenane-drive-to-survive/api/gp/gp_api_main.parquet"
 gp_results_path      = "s3://greglenane-drive-to-survive/gp/gp_results.parquet"
