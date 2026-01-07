@@ -1,7 +1,6 @@
 import requests
 import pandas as pd
 import duckdb
-import yaml  
 import yaml
 import os
 
@@ -19,6 +18,7 @@ gp_results_path      = "s3://greglenane-drive-to-survive/gp/gp_results.parquet"
 sprint_api_temp_path = "s3://greglenane-drive-to-survive/api/sprint/sprint_api_temp.parquet"
 sprint_api_main_path = "s3://greglenane-drive-to-survive/api/sprint/sprint_api_main.parquet"
 sprint_results_path  = "s3://greglenane-drive-to-survive/sprint/sprint_results.parquet"
+
 
 # Enable S3 access
 con = duckdb.connect()
