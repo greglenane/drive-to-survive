@@ -1,15 +1,7 @@
 [project]
 name = "drive-to-survive"
 version = "0.1.0"
-<<<<<<< HEAD
-<<<<<<< HEAD
 description = "python environment for drive-to-survive"
-=======
-description = "Add your description here"
->>>>>>> 811a1e9 (updates for secret use and first script run test)
-=======
-description = "python environment for drive-to-survive"
->>>>>>> 24a0575 (structure for running multiple python script jobs in gh actions)
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
