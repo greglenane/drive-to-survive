@@ -41,7 +41,7 @@ def robust_parse(val):
             return []
     return val
 
-print(f"Beginning conversion process for Round {rnd}, Year {year}")
+print(f"Beginning conversion process")
 
 ###########################################################################################
 # PART 3: FLATTENING & TRANSFORMATION (GP RESULTS)
