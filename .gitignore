@@ -1,6 +1,13 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 .venv
 .python-version
 =======
+=======
+.venv
+.python-version
+pyproject.toml
+uv.lock
+>>>>>>> 08a2c1b (initial setup for gh actions with duckdb method)
 
 >>>>>>> a2fa772 (Create .gitignore)

@@ -2,6 +2,7 @@
 import requests
 import pandas as pd
 import duckdb
+<<<<<<< HEAD
 import os
 import yaml
 
@@ -26,6 +27,16 @@ SET s3_region= '{s3_region}';
 SET s3_access_key_id= '{s3_access_key_id}';
 SET s3_secret_access_key= '{s3_secret_access_key}';
 """)
+=======
+
+# set variables
+gp_api_temp_path = "s3://greglenane-drive-to-survive/api/gp/gp_api_temp.parquet"
+gp_api_main_path = "s3://greglenane-drive-to-survive/api/gp/gp_api_main.parquet"
+sprint_api_temp_path = "s3://greglenane-drive-to-survive/api/sprint/sprint_api_temp.parquet"
+sprint_api_main_path = "s3://greglenane-drive-to-survive/api/sprint/sprint_api_main.parquet"
+
+
+>>>>>>> 08a2c1b (initial setup for gh actions with duckdb method)
 
 for rnd in map(str, range(1, 25)):
     print(f"\n================ Round {rnd} ================\n")
