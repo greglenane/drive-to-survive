@@ -26,9 +26,12 @@ jobs:
 
       - name: "Install dependencies"
         run: uv sync --no-install-project
+<<<<<<< HEAD
 
       - name: Debug File List
         run: ls -R
+=======
+>>>>>>> 910a4f0 (corrections to uv sync for pathing)
 
       - name: "Run API Script"
         env:
