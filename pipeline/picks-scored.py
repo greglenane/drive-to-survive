@@ -108,7 +108,7 @@ con.register("scoring_aggregate", scoring_aggregate)
 # Persist the flattened sprint data back to S3
 con.execute(f"""
 COPY scoring_aggregate
-TO '{scoring_aggregate}' 
+TO '{scoring_aggregate_path}' 
 (FORMAT PARQUET, OVERWRITE_OR_IGNORE 1)
 """)
 
