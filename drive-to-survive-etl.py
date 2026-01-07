@@ -3,12 +3,17 @@ import pandas as pd
 import duckdb
 import yaml  
 <<<<<<< HEAD
+<<<<<<< HEAD
 import yaml
 import os
 =======
 import ast
 import yaml
 >>>>>>> 08a2c1b (initial setup for gh actions with duckdb method)
+=======
+import yaml
+import os
+>>>>>>> d80c35d (add import os)
 
 # set variables
 rnd = "24"
