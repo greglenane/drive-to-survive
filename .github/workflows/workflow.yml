@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 name: Run Python Script with uv
 
 on:
@@ -40,3 +41,27 @@ jobs:
           S3_SECRET_ACCESS_KEY: ${{ secrets.S3_SECRET_ACCESS_KEY }}
           S3_REGION: ${{ secrets.S3_REGION }}
         run: uv run convert-results.py
+=======
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Run a one-line script
+      run: echo Hello, world!
+    
+    - name: Run a multi-line script
+      run: |
+        echo Add other actions to build,
+        echo test, and deploy your project.
+>>>>>>> 9e1b6e9 (reorg github actions file)
