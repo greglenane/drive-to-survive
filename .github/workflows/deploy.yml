@@ -69,8 +69,8 @@ jobs:
           S3_SECRET_ACCESS_KEY: ${{ secrets.S3_SECRET_ACCESS_KEY }}
           S3_REGION: ${{ secrets.S3_REGION }}
           # Path fixes for GitHub Pages
-          BASE_PATH: /drive-to-survive
-          EVIDENCE_VAR_deploymentPath: /drive-to-survive
+          EVIDENCE_BASE_PATH: /drive-to-survive
+          EVIDENCE_ASSETS_PATH: /drive-to-survive
         run: |
           npm install
           npm run sources
@@ -81,7 +81,7 @@ jobs:
       - name: "Upload Artifacts"
         uses: actions/upload-pages-artifact@v3
         with:
-          path: build
+          path: .build
 
       # 9. push the build folder to the GitHub Pages web server
       - name: "Deploy to GitHub Pages"
