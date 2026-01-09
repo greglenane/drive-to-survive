@@ -65,6 +65,7 @@ jobs:
           S3_REGION: ${{ secrets.S3_REGION }}
         run: |
           npm install
+          npm run sources
           npm run build
 
       # --- PHASE 3: HOSTING ON GITHUB PAGES ---
