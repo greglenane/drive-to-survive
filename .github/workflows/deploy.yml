@@ -1,0 +1,80 @@
+name: F1 ETL and Dashboard Deploy
+
+on:
+  workflow_dispatch: # Allows manual trigger
+  push:
+    branches: [ "main" ] # Automatically trigger on push to main branch
+
+# Permissions for GH Actions to writeto GH Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  run-pipeline-and-deploy:
+    runs-on: ubuntu-latest # Spins up a fresh Linux virtual machine
+
+    steps:
+      # 1. Bring your code from the GitHub repo into the virtual machine
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # --- PHASE 1: ETL
+      # 2. Setup 'uv'
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          version: 'latest'
+
+      # 3. install python
+      - name: Set up Python
+        run: uv python install
+
+      # 4. Install the libraries listed in pyproject.toml/uv.lock
+      - name: Install Python dependencies
+        run: uv sync --no-install-project
+
+      # 5. Execute etl scripts. 
+      - name: Run ETL Scripts
+        env:
+          S3_ACCESS_KEY_ID: ${{ secrets.S3_ACCESS_KEY_ID }}
+          S3_SECRET_ACCESS_KEY: ${{ secrets.S3_SECRET_ACCESS_KEY }}
+          S3_REGION: ${{ secrets.S3_REGION }}
+        run: |
+          uv run pipeline/download-last-race.py
+          uv run pipeline/download-picks.py
+          uv run pipeline/convert-results.py
+          uv run pipeline/score-results.py
+          uv run pipeline/picks-scored.py
+
+      # --- PHASE 2: EVIDENCE DASHBOARD BUILD ---
+      # 6. Evidence requires Node.js to run
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      # 7. Install Evidence and run the build command
+      - name: Install Evidence and Build
+        env:
+          S3_ACCESS_KEY_ID: ${{ secrets.S3_ACCESS_KEY_ID }}
+          S3_SECRET_ACCESS_KEY: ${{ secrets.S3_SECRET_ACCESS_KEY }}
+          S3_REGION: ${{ secrets.S3_REGION }}
+        run: |
+          npm install
+          npm run build
+
+      # --- PHASE 3: HOSTING ON GITHUB PAGES ---
+      # 8. Take the 'build' folder created by Evidence and prepare it for upload
+      - name: "Upload Artifacts"
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: build
+
+      # 9. push the build folder to the GitHub Pages web server
+      - name: "Deploy to GitHub Pages"
+        id: deployment
+        uses: actions/deploy-pages@v4
