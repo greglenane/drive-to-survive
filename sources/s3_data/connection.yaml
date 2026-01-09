@@ -1,9 +1,9 @@
 name: s3_data
-type: duckdb
+type: s3
 options:
-  initialization_queries: |
-    INSTALL httpfs;
-    LOAD httpfs;
-    SET s3_region='${AWS_REGION}';
-    SET s3_access_key_id='${AWS_ACCESS_KEY_ID}';
-    SET s3_secret_access_key='${AWS_SECRET_ACCESS_KEY}';
+    # Use 'env.' prefix so Evidence pulls from the GitHub runner environment
+    accessKeyId: env.S3_ACCESS_KEY_ID
+    secretAccessKey: env.S3_SECRET_ACCESS_KEY
+    region: env.S3_REGION
+    # This helps DuckDB resolve the S3 paths correctly
+    provider: aws
