@@ -1,3 +1,5 @@
+deploymentPath: /drive-to-survive
+
 appearance:
   default: dark
   switcher: true
