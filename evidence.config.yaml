@@ -1,5 +1,4 @@
-site_path: /drive-to-survive
-deploymentPath: /drive-to-survive
+base_path: /drive-to-survive
 
 appearance:
   default: dark
