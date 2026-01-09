@@ -60,11 +60,11 @@ jobs:
       # 7. Install Evidence and run the build command
       - name: "Install Evidence and Build"
         env:
-          # Standard AWS variables that DuckDB's HTTPFS extension looks for
-          AWS_ACCESS_KEY_ID: ${{ secrets.S3_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.S3_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ secrets.S3_REGION }}
-          # Evidence-specific variables to override connection.yaml
+          # Standard SvelteKit/Evidence variable for subfolder hosting
+          BASE_PATH: /drive-to-survive
+          # Evidence specific variable
+          EVIDENCE_VAR_deploymentPath: /drive-to-survive
+          # Keep your S3 secrets here too
           S3_ACCESS_KEY_ID: ${{ secrets.S3_ACCESS_KEY_ID }}
           S3_SECRET_ACCESS_KEY: ${{ secrets.S3_SECRET_ACCESS_KEY }}
           S3_REGION: ${{ secrets.S3_REGION }}
