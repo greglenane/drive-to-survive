@@ -1,5 +1,5 @@
 deployment:
-  base_path: /drive-to-survive
+  basePath: /drive-to-survive
 
 appearance:
   default: dark
