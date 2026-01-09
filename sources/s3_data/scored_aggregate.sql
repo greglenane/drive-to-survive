@@ -1,0 +1,1 @@
+SELECT * FROM read_parquet('s3://greglenane-drive-to-survive/scored_aggregate.parquet');
