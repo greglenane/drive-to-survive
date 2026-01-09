@@ -1,32 +1,36 @@
 appearance:
-  default: system
+  default: dark
   switcher: true
 
 theme:
   colorPalettes:
     default:
       light:
-        - "#236aa4"
-        - "#45a1bf"
-        - "#a5cdee"
-        - "#8dacbf"
-        - "#85c7c6"
-        - "#d2c6ac"
-        - "#f4b548"
-        - "#8f3d56"
-        - "#71b9f4"
-        - "#46a485"
+        - "#236aa4" # Deep Navy
+        - "#f4b548" # Goldenrod
+        - "#8f3d56" # Wine Red
+        - "#46a485" # Emerald
+        - "#e3633d" # Terracotta (New)
+        - "#a5cdee" # Soft Blue
+        - "#6e58a6" # Amethyst (New)
+        - "#d2c6ac" # Parchment
+        - "#45a1bf" # Steel Teal
+        - "#8dacbf" # Slate
+        - "#71b9f4" # Sky Blue
+        - "#85c7c6" # Seafoam
       dark:
-        - "#236aa4"
-        - "#45a1bf"
-        - "#a5cdee"
-        - "#8dacbf"
-        - "#85c7c6"
-        - "#d2c6ac"
-        - "#f4b548"
-        - "#8f3d56"
-        - "#71b9f4"
-        - "#46a485"
+        - "#236aa4" # Deep Navy
+        - "#f4b548" # Goldenrod
+        - "#8f3d56" # Wine Red
+        - "#46a485" # Emerald
+        - "#e3633d" # Terracotta (New)
+        - "#a5cdee" # Soft Blue
+        - "#6e58a6" # Amethyst (New)
+        - "#d2c6ac" # Parchment
+        - "#45a1bf" # Steel Teal
+        - "#8dacbf" # Slate
+        - "#71b9f4" # Sky Blue
+        - "#85c7c6" # Seafoam
   colorScales:
     default:
       light:
