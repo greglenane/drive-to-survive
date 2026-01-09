@@ -60,14 +60,17 @@ jobs:
       # 7. Install Evidence and run the build command
       - name: "Install Evidence and Build"
         env:
-          # Standard SvelteKit/Evidence variable for subfolder hosting
-          BASE_PATH: /drive-to-survive
-          # Evidence specific variable
-          EVIDENCE_VAR_deploymentPath: /drive-to-survive
-          # Keep your S3 secrets here too
+          # Keep these for standard AWS tools
+          AWS_ACCESS_KEY_ID: ${{ secrets.S3_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.S3_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.S3_REGION }}
+          # These are what your connection.yaml is looking for
           S3_ACCESS_KEY_ID: ${{ secrets.S3_ACCESS_KEY_ID }}
           S3_SECRET_ACCESS_KEY: ${{ secrets.S3_SECRET_ACCESS_KEY }}
           S3_REGION: ${{ secrets.S3_REGION }}
+          # Path fixes for GitHub Pages
+          BASE_PATH: /drive-to-survive
+          EVIDENCE_VAR_deploymentPath: /drive-to-survive
         run: |
           npm install
           npm run sources
