@@ -1,9 +1,11 @@
 name: s3_data
 type: duckdb
 options:
-  initialization_queries: |
+  # This tells DuckDB to run these commands when it starts up
+  # It installs the necessary extension to read from S3
+  initial_sql: |
     INSTALL httpfs;
     LOAD httpfs;
-    SET s3_region='${AWS_REGION}';
-    SET s3_access_key_id='${AWS_ACCESS_KEY_ID}';
-    SET s3_secret_access_key='${AWS_SECRET_ACCESS_KEY}';
+    SET s3_region='${S3_REGION}';
+    SET s3_access_key_id='${S3_ACCESS_KEY_ID}';
+    SET s3_secret_access_key='${S3_SECRET_ACCESS_KEY}';
