@@ -51,7 +51,8 @@ queries:
   rowShading=true>
   <Column id=Name />
   <Column id=Driver />
-  <Column id=Race/>
+  <Column id=Round />
+  <Column id=Race />
   <Column id=gp title="GP Points" />
   <Column id=fastest_lap title="Fastest Lap"/>
   <Column id=sprint title="Sprint Points" />
