@@ -4,6 +4,7 @@ full_width: true
 queries:
     - scored_aggregate.sql
     - year.sql
+    - win_probability.sql
     - race_order.sql
     - winning.sql
     - recent_race.sql
@@ -27,15 +28,18 @@ queries:
     chartAreaHeight=300
 />
 
+<div style="text-align: center; font-size: 2rem;">
+    Win Probability
+</div>
 <LineChart
-    data={scored_aggregate}
-    x=Round
-    y=cumulative_total
-    series=Name
-    seriesOrder={winning.map(x => x.Name)}
-    step=true
-    lineWidth=3
-    chartAreaHeight=500
+  data={win_probability}
+  x=Round
+  y=win_probability
+  series=Name
+  seriesOrder={win_probability.map(x => x.Name)}
+  chartAreaHeight={500}
+  yFmt="pct0" 
+  yAxis="pct0"
 />
 
 <div style="text-align: center; font-size: 1.5rem;">
