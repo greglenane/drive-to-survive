@@ -28,6 +28,7 @@ SET s3_secret_access_key= '{s3_secret_access_key}';
 """)
 
 print(f"Starting ETL process for Round {rnd}, Year {year}")
+print("Begin download-last-race.py")
 
 ###########################################################################################
 # PART 1: INGESTION (GP RESULTS)
@@ -86,3 +87,5 @@ if sprint_api.at[0, 'MRData_RaceTable_Races']:
     """)
     con.execute(f"COPY sprint_api_main TO '{sprint_api_main_path}' (FORMAT PARQUET, OVERWRITE_OR_IGNORE 1)")
     print("Sprint API data merged and saved successfully.")
+else:
+    print("No sprint data available for this round.")

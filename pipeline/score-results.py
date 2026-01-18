@@ -24,6 +24,8 @@ SET s3_access_key_id= '{s3_access_key_id}';
 SET s3_secret_access_key= '{s3_secret_access_key}';
 """)
 
+print("Begin score-results.py")
+
 ###########################################################################################
 # PART 5: SCORE RESULTS (GP RESULTS)
 ###########################################################################################

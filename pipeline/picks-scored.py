@@ -24,6 +24,8 @@ SET s3_access_key_id= '{s3_access_key_id}';
 SET s3_secret_access_key= '{s3_secret_access_key}';
 """)
 
+print("Begin picks-scored.py")
+
 ###########################################################################################
 # PART 8: SCORE PICKS
 ###########################################################################################
@@ -113,3 +115,5 @@ TO '{scoring_aggregate_path}'
 """)
 
 print("Scoring aggregate saved to S3 successfully.")
+
+print("drive-to-survive pipeline completed successfully.")

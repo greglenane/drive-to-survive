@@ -23,6 +23,8 @@ SET s3_access_key_id= '{s3_access_key_id}';
 SET s3_secret_access_key= '{s3_secret_access_key}';
 """)
 
+print("Begin convert-results.py")
+
 # functions
 # Robust Parser for DuckDB-stringified JSON
 def robust_parse(val):
