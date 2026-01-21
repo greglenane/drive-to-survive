@@ -3,7 +3,7 @@ title: League Stats
 sidebar_position: 3
 full_width: true
 queries:
-    - yea.sqlr.sql
+    - year.sql
     - scored_aggregate.sql
     - winning.sql
     - player_var.sql
