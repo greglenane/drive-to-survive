@@ -44,7 +44,7 @@ jobs:
           S3_SECRET_ACCESS_KEY: ${{ secrets.S3_SECRET_ACCESS_KEY }}
           S3_REGION: ${{ secrets.S3_REGION }}
         run: |
-          uv run quality_checks/check-missing-picsk.py
+          uv run quality_checks/check-missing-picks.py
           uv run quality_checks/check-missing-results.py
           uv run quality_checks/check-na.py
 
