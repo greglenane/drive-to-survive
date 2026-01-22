@@ -14,7 +14,7 @@ picks_path = "s3://greglenane-drive-to-survive/picks/picks.xlsx"
 picks_season_path = "s3://greglenane-drive-to-survive/picks/picks_season.parquet"
 bucket_name = "greglenane-drive-to-survive"
 s3_xlsx_key = "picks/picks.xlsx"
-excel_url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT2FY2aoQP59QN0E-F6b183RFKxK09G08H7qcIjBSPmWbcsShjtIdNPk9qG6OOikKbsDKDw3k7Z2YPk/pub?output=xlsx"
+excel_url = os.getenv('EXCEL_URL') 
 
 print("Begin download-picks.py")
 
@@ -30,7 +30,6 @@ with BytesIO(excel_bytes) as bio:
     sheet_names = xl.sheet_names
 
 # 3. Upload to S3 using Boto3
-# This treats the file as a raw object, bypassing DuckDB's format limits
 print(f"Uploading .xlsx file to {picks_path}")
 s3 = boto3.client(
     's3',
@@ -56,7 +55,6 @@ SET s3_access_key_id= '{s3_access_key_id}';
 SET s3_secret_access_key= '{s3_secret_access_key}';
 """)
 
-
 all_sheets_list = []
 
 print("Reading and binding sheets")
@@ -76,5 +74,8 @@ with BytesIO(excel_bytes) as bio:
 final_df = pd.concat(all_sheets_list, ignore_index=True)
 
 # 4. Upload the Pandas DataFrame directly to S3 as Parquet
+max_round = max(int(x) for x in sheet_names if x != 'drivers')
+
+print(f"There are now picks through round {max_round}.")
 print(f"Uploading picks table to {picks_season_path}")
 con.execute(f"COPY final_df TO '{picks_season_path}' (FORMAT PARQUET);")
