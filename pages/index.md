@@ -9,6 +9,8 @@ queries:
     - winning.sql
     - recent_race.sql
     - team_scoring.sql
+    - lowest_scores.sql
+    - lowest_scores_team.sql
 ---
 
 <div style="text-align: center; font-size: 2rem;">
@@ -27,6 +29,7 @@ queries:
     stackTotalLabelColor=white
     seriesOrder={race_order.map(x => x.Race)}
     chartAreaHeight=300
+    yMin={lowest_scores[0].total_low}
 />
 
 <div style="text-align: center; font-size: 2rem;">
@@ -45,13 +48,41 @@ queries:
     stackTotalLabelColor=white
     seriesOrder={race_order.map(x => x.Race)}
     chartAreaHeight=300
+    yMin={lowest_scores_team[0].total_low}
 />
 
+<Dropdown
+    data={race_order} 
+    name=Race
+    value=Round
+    label=round_race 
+    title="Round:"
+    defaultValue={race_order[0].Round}
+    order=Round
+/>
+
+```sql race_table
+select 
+  s.Round,
+  s.Name,
+  s.Team_Name,
+  s.Driver,
+  s.Race,
+  s.gp,
+  s.fastest_lap,
+  s.sprint,
+  s.total,
+  s.cumulative_total
+from s3_data.scored_aggregate s
+where s.Round = ${inputs.Race.value}
+order by s.total desc
+```
+
 <div style="text-align: center; font-size: 1.5rem;">
-    Round <Value data={recent_race} column="Round" row=1 /> <Value data={recent_race} column=Race row=1/> Results
+    Round <Value data={race_table} column="Round" row=0 /> <Value data={race_table} column=Race row=0/> Results
 </div>
 <DataTable 
-  data={recent_race}
+  data={race_table}
   rows=all
   rowShading=true>
   <Column id=Name align=left/>
@@ -62,5 +93,5 @@ queries:
   <Column id=gp title="GP Points" align=left/>
   <Column id=fastest_lap title="Fastest Lap" align=left/>
   <Column id=sprint title="Sprint Points" align=left/>
-  <Column id=total title="Total Points" contentType=bar barColor="#CCFF00"/>
+  <Column id=total title="Total Points" contentType=bar barColor="#00ff26"/>
 </DataTable>
