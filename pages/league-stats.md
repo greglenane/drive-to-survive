@@ -9,6 +9,7 @@ queries:
     - player_var.sql
     - goose_eggs.sql
     - win_probability.sql
+    - most_tens.sql
 ---
 
 <div style="text-align: center; font-size: 2rem;">
@@ -60,6 +61,19 @@ queries:
     data={goose_eggs}
     x=Name
     y="Goose Eggs"
+    series=Name
+    labels=true
+    labelPosition=outside
+    chartAreaHeight=500
+/>
+
+<div style="text-align: center; font-size: 2rem;">
+    Most 10s
+</div>
+<BarChart
+    data={most_tens}
+    x=Name
+    y="Most 10s"
     series=Name
     labels=true
     labelPosition=outside
