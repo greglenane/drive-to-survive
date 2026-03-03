@@ -8,6 +8,7 @@ queries:
     - winning.sql
     - player_var.sql
     - goose_eggs.sql
+    - win_probability.sql
 ---
 
 <div style="text-align: center; font-size: 2rem;">
@@ -22,6 +23,20 @@ queries:
     step=true
     lineWidth=3
     chartAreaHeight=500
+/>
+
+<div style="text-align: center; font-size: 2rem;">
+    Win Probability
+</div>
+<LineChart
+  data={win_probability}
+  x=Round
+  y=win_probability
+  series=Name
+  seriesOrder={win_probability.map(x => x.Name)}
+  chartAreaHeight={500}
+  yFmt="pct0" 
+  yAxis="pct0"
 />
 
 <div style="text-align: center; font-size: 2rem;">
