@@ -33,7 +33,7 @@ if not (records_per_round == 20).all():
     print("WARNING: Not all rounds have exactly 20 records")
     for round_number, count in records_per_round.items():
         if count != 20:
-            print(f"Round {round_number} has {count} picks")
+            print(f"Round {round_number} has {count} results")
 
 # Check for gaps in round numbers
 rounds = sorted([int(x) for x in gp_results['round'].unique()])
