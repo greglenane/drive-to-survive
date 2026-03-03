@@ -8,10 +8,11 @@ queries:
     - race_order.sql
     - winning.sql
     - recent_race.sql
+    - team_scoring.sql
 ---
 
 <div style="text-align: center; font-size: 2rem;">
-    <Value data={year} column="season" /> Standings
+    <Value data={year} column="season" /> Player Standings
 </div>
 <BarChart
     data={scored_aggregate}
@@ -29,17 +30,21 @@ queries:
 />
 
 <div style="text-align: center; font-size: 2rem;">
-    Win Probability
+    <Value data={year} column="season" /> Team Standings
 </div>
-<LineChart
-  data={win_probability}
-  x=Round
-  y=win_probability
-  series=Name
-  seriesOrder={win_probability.map(x => x.Name)}
-  chartAreaHeight={500}
-  yFmt="pct0" 
-  yAxis="pct0"
+<BarChart
+    data={team_scoring}
+    x=team_name
+    y=team_total
+    series=Race
+    swapXY=true
+    labels=true
+    stackTotalLabel=true
+    labelPosition=outside
+    labelColor=transparent
+    stackTotalLabelColor=white
+    seriesOrder={race_order.map(x => x.Race)}
+    chartAreaHeight=300
 />
 
 <div style="text-align: center; font-size: 1.5rem;">
@@ -49,12 +54,13 @@ queries:
   data={recent_race}
   rows=all
   rowShading=true>
-  <Column id=Name />
-  <Column id=Driver />
-  <Column id=Round />
-  <Column id=Race />
-  <Column id=gp title="GP Points" />
-  <Column id=fastest_lap title="Fastest Lap"/>
-  <Column id=sprint title="Sprint Points" />
-  <Column id=total title="Total Points" contentType=bar barColor="#CCFF00" />
+  <Column id=Name align=left/>
+  <Column id=team_name align=left/>
+  <Column id=Driver align=left/>
+  <Column id=Round align=left/>
+  <Column id=Race align=left/>
+  <Column id=gp title="GP Points" align=left/>
+  <Column id=fastest_lap title="Fastest Lap" align=left/>
+  <Column id=sprint title="Sprint Points" align=left/>
+  <Column id=total title="Total Points" contentType=bar barColor="#CCFF00"/>
 </DataTable>
