@@ -12,6 +12,7 @@ picks_season_path          = "s3://greglenane-drive-to-survive/picks/picks_seaso
 combined_scoring_path      = "s3://greglenane-drive-to-survive/results_scored.parquet"
 picks_scored_path          = "s3://greglenane-drive-to-survive/picks_scored.parquet"
 scoring_aggregate_path     = "s3://greglenane-drive-to-survive/scored_aggregate.parquet"
+teams_path                 = "s3://greglenane-drive-to-survive/mapping/teams.csv"
 
 # Enable S3 access
 con = duckdb.connect()
@@ -33,8 +34,11 @@ print("Begin picks-scored.py")
 picks_scored = con.execute(f"""
     SELECT 
         pics.*,
+        teams.*,
         cs.*
     FROM read_parquet('{picks_season_path}') pics
+    LEFT JOIN read_csv_auto('{teams_path}') teams
+        ON pics.Name = teams.Name
     LEFT JOIN read_parquet('{combined_scoring_path}') cs
         ON pics.round = cs.round AND 
         pics.Driver = CONCAT(cs.Driver_givenName, ' ', cs.Driver_familyName);
@@ -59,6 +63,8 @@ scoring_aggregate = con.execute(f"""
     WITH round_totals AS (
         SELECT 
             Name, 
+            Team,
+            Team_Name,
             Round,
             Race,
             DATE,
