@@ -1,4 +1,4 @@
-# 🏎️ Drive to Survive: F1 Fantasy Scoreboard
+# Drive to Survive: F1 Fantasy Scoreboard
 
 [![F1 ETL and Dashboard Deploy](https://github.com/greglenane/drive-to-survive/actions/workflows/deploy.yml/badge.svg)](https://github.com/greglenane/drive-to-survive/actions/workflows/deploy.yml)
 
@@ -18,7 +18,10 @@ Points are calculated automatically by the ETL pipeline:
 
 | Position | GP Points | Sprint Points | Fastest Lap |
 | :--- | :--- | :--- | :--- |
-| 1-4 | 0 | 0 | 0 |
+| 1 | -3 | 0 | 0 |
+| 2 | -2 | 0 | 0 |
+| 3 | -1 | 0 | 0 |
+| 4 | 0 | 0 | 0 |
 | 5 | 1 | 0 | 0 |
 | 6 | 2 | 0 | 0 |
 | 7 | 4 | 1 | 0 |
