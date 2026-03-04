@@ -1,7 +1,9 @@
 name: F1 ETL and Dashboard Deploy
 
 on:
-  workflow_dispatch:
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:        
   push:
     branches: ["main"]
 
