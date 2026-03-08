@@ -51,7 +51,6 @@ def s3_file_exists(s3_path):
     bucket = s3_url[0]
     key = s3_url[1]
     
-    s3 = boto3.client('s3')
     try:
         s3.head_object(Bucket=bucket, Key=key)
         return True
