@@ -104,6 +104,13 @@ print("Flattened GP results data saved to S3 successfully.")
 # FLATTENING & TRANSFORMATION (SPRINT RESULTS)
 ###########################################################################################
 
+s3 = boto3.client(
+    's3',
+    region_name=s3_region,
+    aws_access_key_id=s3_access_key_id,
+    aws_secret_access_key=s3_secret_access_key
+)
+
 if s3_file_exists(sprint_api_main_path):
     # Load the merged sprint data back from S3
     sprint_main = con.execute(f"SELECT * FROM read_parquet('{sprint_api_main_path}')").df()
