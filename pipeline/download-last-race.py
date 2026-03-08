@@ -26,7 +26,7 @@ SET s3_secret_access_key= '{s3_secret_access_key}';
 print("Begin download-last-race.py")
 
 ###########################################################################################
-# PART 1: INGESTION (GP RESULTS)
+# INGESTION (GP RESULTS)
 ###########################################################################################
 gp_url = "https://api.jolpi.ca/ergast/f1/current/last/results/"
 gp_data = requests.get(gp_url).json()
@@ -60,7 +60,7 @@ if gp_api.at[0, 'MRData_RaceTable_Races']:
     print("GP API data merged and saved successfully.")
 
     ###########################################################################################
-    # PART 2: INGESTION (SPRINT RESULTS)
+    # INGESTION (SPRINT RESULTS)
     ###########################################################################################
     sprint_url = f"https://api.jolpi.ca/ergast/f1/current/last/sprint/"
     sprint_data = requests.get(sprint_url).json()

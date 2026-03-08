@@ -27,7 +27,7 @@ SET s3_secret_access_key= '{s3_secret_access_key}';
 print("Begin score-results.py")
 
 ###########################################################################################
-# PART 5: SCORE RESULTS (GP RESULTS)
+# SCORE RESULTS (GP RESULTS)
 ###########################################################################################
 gp_results_scored = con.execute(f"""
                                 
@@ -60,7 +60,7 @@ TO '{gp_results_scored_path}'
 print("Scored GP results saved to S3 successfully.")
 
 ###########################################################################################
-# PART 6: SCORE RESULTS (SPRINT RESULTS)
+# SCORE RESULTS (SPRINT RESULTS)
 ###########################################################################################
 
 sprint_results_scored = con.execute(f"""
@@ -90,7 +90,7 @@ TO '{sprint_results_scored_path}'
 print("Scored Sprint results saved to S3 successfully.")
 
 ###########################################################################################
-# PART 7: SCORE RESULTS (GP + SPRINT COMBINED)
+# SCORE RESULTS (GP + SPRINT COMBINED)
 ###########################################################################################
 
 combined_scoring = con.execute(f"""

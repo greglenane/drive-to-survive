@@ -28,7 +28,7 @@ SET s3_secret_access_key= '{s3_secret_access_key}';
 print("Begin picks-scored.py")
 
 ###########################################################################################
-# PART 8: SCORE PICKS
+# SCORE PICKS
 ###########################################################################################
 
 picks_scored = con.execute(f"""
@@ -57,7 +57,7 @@ TO '{picks_scored_path}'
 print("Picks scored results saved to S3 successfully.")
 
 ################################################################################
-# PART 9: SUMMARIZE PICKS SCORED
+# SUMMARIZE PICKS SCORED
 ################################################################################
 scoring_aggregate = con.execute(f"""
     WITH round_totals AS (

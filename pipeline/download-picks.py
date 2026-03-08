@@ -18,18 +18,18 @@ excel_url = os.getenv('EXCEL_URL')
 
 print("Begin download-picks.py")
 
-# 2. Download raw bytes from Google Sheets
+# Download raw bytes from Google Sheets
 print("Downloading Excel file")
 response = requests.get(excel_url)
 excel_bytes = response.content
 
-# 2a. Extract sheet names using Pandas
+# Extract sheet names using Pandas
 print("Extracting sheet names")
 with BytesIO(excel_bytes) as bio:
     xl = pd.ExcelFile(bio, engine='openpyxl')
     sheet_names = xl.sheet_names
 
-# 3. Upload to S3 using Boto3
+# Upload to S3 using Boto3
 print(f"Uploading .xlsx file to {picks_path}")
 s3 = boto3.client(
     's3',
@@ -60,20 +60,20 @@ all_sheets_list = []
 print("Reading and binding sheets")
 with BytesIO(excel_bytes) as bio:
     for sheet in sheet_names:
-        # Skip specific sheets if necessary (e.g., 'Instructions' or 'Summary')
+        # Skip specific sheets if necessary
         if sheet == 'drivers': continue
         
         df_sheet = pd.read_excel(bio, sheet_name=sheet, engine='openpyxl')
         
-        # Optional: Add a column to track which sheet the data came from
+        # Add a column to track which sheet the data came from
         df_sheet['source_sheet'] = sheet
         
         all_sheets_list.append(df_sheet)
 
-# Bind (concatenate) all DataFrames together
+# Bind all DataFrames together
 final_df = pd.concat(all_sheets_list, ignore_index=True)
 
-# 4. Upload the Pandas DataFrame directly to S3 as Parquet
+# Upload the Pandas DataFrame directly to S3 as Parquet
 max_round = max(int(x) for x in sheet_names if x != 'drivers')
 
 print(f"There are now picks through round {max_round}.")
