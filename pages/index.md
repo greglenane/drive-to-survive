@@ -7,7 +7,6 @@ queries:
     - win_probability.sql
     - race_order.sql
     - winning.sql
-    - recent_race.sql
     - team_scoring.sql
     - lowest_scores.sql
     - lowest_scores_team.sql
