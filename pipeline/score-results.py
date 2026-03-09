@@ -1,4 +1,5 @@
 import botocore
+import boto3
 import pandas as pd
 import duckdb
 import os
