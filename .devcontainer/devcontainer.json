@@ -2,7 +2,11 @@
   "name": "F1 Data Pipeline",
   "image": "mcr.microsoft.com/devcontainers/python:3.11",
   "features": {
-    "ghcr.io/devcontainers-contrib/features/uv:1": {}
+    "ghcr.io/devcontainers/features/aws-cli:1": {},
+    "ghcr.io/devcontainers-contrib/features/uv:1": {},
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "lts" 
+    }
   },
-  "postCreateCommand": "uv sync"
+  "postCreateCommand": "uv sync && npm install"
 }
