@@ -32,7 +32,7 @@ picks_scored = con.execute(f"""
 na_results = picks_scored[picks_scored['positionText'].isna()]
 if not na_results.empty:
     print(f"WARNING: Found {len(na_results)} picks with NA driver results")
-    na_rounds = na_results[['Name', 'round']].drop_duplicates().values.tolist()
+    print(na_results[['Name', 'Round']].drop_duplicates().values.tolist())
 else:
     print("All picks have valid driver results")
     print("Now checking if all picks are properly scored...")

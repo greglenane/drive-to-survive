@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "boto3>=1.42.23",
+    "botocore>=1.42.23",
     "duckdb>=1.4.3",
     "fsspec>=2025.12.0",
     "openpyxl>=3.1.5",

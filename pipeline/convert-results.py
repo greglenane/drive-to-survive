@@ -2,6 +2,8 @@ import pandas as pd
 import duckdb
 import yaml
 import os
+import boto3
+import botocore
 
 # set variables
 s3_region = os.getenv('S3_REGION')
@@ -25,8 +27,7 @@ SET s3_secret_access_key= '{s3_secret_access_key}';
 
 print("Begin convert-results.py")
 
-# functions
-# Robust Parser for DuckDB-stringified JSON
+# parser fucntion for JSON
 def robust_parse(val):
     # check for null/NaN
     if pd.isna(val):
@@ -43,19 +44,32 @@ def robust_parse(val):
             return []
     return val
 
+# s3 file check funciton
+def s3_file_exists(s3_path):
+    # parse the path we are checking a file in
+    s3_url = s3_path.replace("s3://", "").split("/", 1)
+    bucket = s3_url[0]
+    key = s3_url[1]
+    
+    try:
+        s3.head_object(Bucket=bucket, Key=key)
+        return True
+    except botocore.exceptions.ClientError:
+        return False
+
 print(f"Beginning conversion process")
 
 ###########################################################################################
-# PART 3: FLATTENING & TRANSFORMATION (GP RESULTS)
+# FLATTENING & TRANSFORMATION (GP RESULTS)
 ###########################################################################################
 
-# 1. Load the merged data back from S3
+# Load the merged data back from S3
 gp_main = con.execute(f"SELECT * FROM read_parquet('{gp_api_main_path}')").df()
 
-# 2. Parse
+# Parse
 gp_main['MRData_RaceTable_Races'] = gp_main['MRData_RaceTable_Races'].apply(robust_parse)
 
-# 3. Explode the list of races
+# Explode the list of races
 gp_exploded = gp_main.explode('MRData_RaceTable_Races').dropna(subset=['MRData_RaceTable_Races'])
 
 flat_data = pd.json_normalize(
@@ -72,12 +86,12 @@ flat_data = pd.json_normalize(
     errors='ignore'
 )
 
-# 5. Clean up column names
+# Clean up column names
 flat_data.columns = [c.replace('.', '_') for c in flat_data.columns]
-# 6. Register the flattened data as a DuckDB table
+# Register the flattened data as a DuckDB table
 con.register("flat_data_table", flat_data)
 
-# 7. Persist the flattened data back to S3
+# Persist the flattened data back to S3
 con.execute(f"""
 COPY flat_data_table 
 TO '{gp_results_path}' 
@@ -86,43 +100,46 @@ TO '{gp_results_path}'
 print("Flattened GP results data saved to S3 successfully.")
 
 ###########################################################################################
-# PART 4: FLATTENING & TRANSFORMATION (SPRINT RESULTS)
+# FLATTENING & TRANSFORMATION (SPRINT RESULTS)
 ###########################################################################################
 
-# 1. Load the merged sprint data back from S3
-sprint_main = con.execute(f"SELECT * FROM read_parquet('{sprint_api_main_path}')").df()
-
-# 2. Parse
-sprint_main['MRData_RaceTable_Races'] = sprint_main['MRData_RaceTable_Races'].apply(robust_parse)
-
-# 3. Explode the list of sprints
-sprint_exploded = sprint_main.explode('MRData_RaceTable_Races').dropna(subset=['MRData_RaceTable_Races'])
-
-sprint_flat_data = pd.json_normalize(
-    sprint_exploded['MRData_RaceTable_Races'],
-    record_path=['SprintResults'],              
-    meta=[
-        'season', 
-        'round', 
-        'raceName', 
-        ['Circuit', 'circuitName'],
-        ['Circuit', 'Location', 'locality'],
-        'date'
-    ],
-    errors='ignore'
+s3 = boto3.client(
+    's3',
+    region_name=s3_region,
+    aws_access_key_id=s3_access_key_id,
+    aws_secret_access_key=s3_secret_access_key
 )
 
-# 5. Clean up column names
-sprint_flat_data.columns = [c.replace('.', '_') for c in sprint_flat_data.columns]
-
-# 6. Register the flattened sprint data as a DuckDB table
-con.register("sprint_flat_data_table", sprint_flat_data)
-
-# 7. Persist the flattened sprint data back to S3
-con.execute(f"""
-COPY sprint_flat_data_table
-TO '{sprint_results_path}' 
-(FORMAT PARQUET, OVERWRITE_OR_IGNORE 1)
-""")
-
-print("Flattened Sprint results data saved to S3 successfully.")
+if s3_file_exists(sprint_api_main_path):
+    # Load the merged sprint data back from S3
+    sprint_main = con.execute(f"SELECT * FROM read_parquet('{sprint_api_main_path}')").df()
+    # Parse
+    sprint_main['MRData_RaceTable_Races'] = sprint_main['MRData_RaceTable_Races'].apply(robust_parse)
+    # Explode the list of sprints
+    sprint_exploded = sprint_main.explode('MRData_RaceTable_Races').dropna(subset=['MRData_RaceTable_Races'])
+    sprint_flat_data = pd.json_normalize(
+        sprint_exploded['MRData_RaceTable_Races'],
+        record_path=['SprintResults'],              
+        meta=[
+            'season', 
+            'round', 
+            'raceName', 
+            ['Circuit', 'circuitName'],
+            ['Circuit', 'Location', 'locality'],
+            'date'
+        ],
+        errors='ignore'
+    )
+    # Clean up column names
+    sprint_flat_data.columns = [c.replace('.', '_') for c in sprint_flat_data.columns]
+    # Register the flattened sprint data as a DuckDB table
+    con.register("sprint_flat_data_table", sprint_flat_data)
+    # Persist the flattened sprint data back to S3
+    con.execute(f"""
+    COPY sprint_flat_data_table
+    TO '{sprint_results_path}' 
+    (FORMAT PARQUET, OVERWRITE_OR_IGNORE 1)
+    """)
+    print("Flattened Sprint results data saved to S3 successfully.")
+else:
+    print("No Sprint data available yet.")
