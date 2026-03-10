@@ -29,6 +29,11 @@ queries:
     seriesOrder={race_order.map(x => x.Race)}
     chartAreaHeight=300
     yMin={lowest_scores[0].total_low}
+    echartsOptions={{
+        xAxis: {
+            position: 'bottom'
+        }
+    }}
 />
 
 <div style="text-align: center; font-size: 2rem;">
@@ -48,6 +53,11 @@ queries:
     seriesOrder={race_order.map(x => x.Race)}
     chartAreaHeight=300
     yMin={lowest_scores_team[0].total_low}
+    echartsOptions={{
+        xAxis: {
+            position: 'bottom'
+        }
+    }}
 />
 
 <Dropdown
