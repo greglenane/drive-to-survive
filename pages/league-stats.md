@@ -21,6 +21,7 @@ queries:
     y=cumulative_total
     series=Name
     seriesOrder={winning.map(x => x.Name)}
+    markers=true
     step=true
     lineWidth=3
     chartAreaHeight=500
@@ -35,7 +36,8 @@ queries:
   y=win_probability
   series=Name
   seriesOrder={win_probability.map(x => x.Name)}
-  chartAreaHeight={500}
+  chartAreaHeight=500
+  markers=true
   yFmt="pct0" 
   yAxis="pct0"
 />
@@ -64,7 +66,7 @@ queries:
     series=Name
     labels=true
     labelPosition=outside
-    chartAreaHeight=500
+    chartAreaHeight=300
 />
 
 <div style="text-align: center; font-size: 2rem;">
@@ -77,5 +79,5 @@ queries:
     series=Name
     labels=true
     labelPosition=outside
-    chartAreaHeight=500
+    chartAreaHeight=300
 />
