@@ -155,7 +155,7 @@ if s3_file_exists(sprint_results_scored_path):
             gp.Circuit_Location_locality, 
             gp.date,
             sprint.points AS sprint_points,
-            sprint.time AS sprint_time,
+            sprint.Time_time AS sprint_time,
 
             gp.grid AS gp_grid,
             gp.gp_expected,
