@@ -46,7 +46,6 @@ queries:
     Variance From Expected Points
 </div>
 <BarChart
-    subtitle="Variance uses expected points of grid position in GP and Sprint and compares with actual results. Positive #'s are 'lucky'"
     data={player_var}
     x=Name
     y="Cumulative Variance"
