@@ -24,7 +24,7 @@ queries:
     markers=true
     step=true
     lineWidth=3
-    chartAreaHeight=500
+    chartAreaHeight=300
 />
 
 <div style="text-align: center; font-size: 2rem;">
@@ -36,7 +36,7 @@ queries:
   y=win_probability
   series=Name
   seriesOrder={win_probability.map(x => x.Name)}
-  chartAreaHeight=500
+  chartAreaHeight=300
   markers=true
   yFmt="pct0" 
   yAxis="pct0"
@@ -46,14 +46,13 @@ queries:
     Variance From Expected Points
 </div>
 <BarChart
-    subtitle="Variance uses expected points of grid position in GP and Sprint and compares with actual results. Positive #'s are 'lucky'"
     data={player_var}
     x=Name
     y="Cumulative Variance"
     series=Name
     labels=true
     labelPosition=outside
-    chartAreaHeight=500
+    chartAreaHeight=300
 />
 
 <div style="text-align: center; font-size: 2rem;">

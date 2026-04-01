@@ -27,7 +27,7 @@ queries:
     labelColor=transparent
     stackTotalLabelColor=white
     seriesOrder={race_order.map(x => x.Race)}
-    rightPadding=90
+    rightPadding=17
     chartAreaHeight=250
     yMin={lowest_scores[0].total_low}
     echartsOptions={{
@@ -52,7 +52,7 @@ queries:
     labelColor=transparent
     stackTotalLabelColor=white
     seriesOrder={race_order.map(x => x.Race)}
-    rightPadding=90
+    rightPadding=17
     chartAreaHeight=250
     yMin={lowest_scores_team[0].total_low}
     echartsOptions={{
