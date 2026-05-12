@@ -10,3 +10,4 @@ static/data
 .evidence/
 .python-version
 secrets
+*.ipynb_checkpoints
