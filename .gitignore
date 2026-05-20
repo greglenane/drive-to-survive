@@ -1,4 +1,3 @@
-
 .svelte-kit
 build
 node_modules
@@ -10,3 +9,4 @@ static/data
 .evidence/
 .python-version
 secrets
+*.ipynb_checkpoints
