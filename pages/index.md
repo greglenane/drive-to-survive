@@ -4,8 +4,8 @@ full_width: true
 queries:
     - scored_aggregate.sql
     - year.sql
-    - win_probability.sql
     - race_order.sql
+    - race_order_flipped.sql
     - winning.sql
     - team_scoring.sql
     - lowest_scores.sql
@@ -68,7 +68,7 @@ queries:
     value=Round
     label=round_race 
     title="Round:"
-    defaultValue={race_order[0].Round}
+    defaultValue={race_order_flipped[0].Round}
     order=Round
 />
 
