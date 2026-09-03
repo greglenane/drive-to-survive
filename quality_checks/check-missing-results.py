@@ -76,12 +76,12 @@ if s3_file_exists(sprint_results_path):
     sprint_records_per_round = sprint_results.groupby('round').size()
     print(f"Sprint rounds with results: {sorted(int(x) for x in sprint_records_per_round.index.tolist())}")
 
-    if not (sprint_records_per_round == 20).all():
-        print("WARNING: Not all sprint rounds have exactly 20 records")
+    if not (sprint_records_per_round == 22).all():
+        print("WARNING: Not all sprint rounds have exactly 22 records")
         for round_number, count in sprint_records_per_round.items():
             if count != 22:
                 print(f"Sprint Round {round_number} has {count} picks")
     else:
-        print("All sprint rounds have exactly 20 records")
+        print("All sprint rounds have exactly 22 records")
 else:
     print("No sprint results file found at the specified S3 path")
