@@ -79,7 +79,7 @@ if s3_file_exists(sprint_results_path):
     if not (sprint_records_per_round == 20).all():
         print("WARNING: Not all sprint rounds have exactly 20 records")
         for round_number, count in sprint_records_per_round.items():
-            if count != 20:
+            if count != 22:
                 print(f"Sprint Round {round_number} has {count} picks")
     else:
         print("All sprint rounds have exactly 20 records")
